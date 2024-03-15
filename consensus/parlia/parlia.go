@@ -1170,6 +1170,7 @@ func (p *Parlia) Finalize(chain consensus.ChainHeaderReader, header *types.Heade
 			if err != nil {
 				// it is possible that slash validator failed because of the slash channel is disabled.
 				log.Error("slash validator failed", "block hash", header.Hash(), "address", spoiledVal)
+				panic("slash validator failed")
 			}
 		}
 	}
@@ -1672,6 +1673,7 @@ func (p *Parlia) slash(spoiledVal common.Address, state *state.StateDB, header *
 		log.Error("Unable to pack tx for slash", "error", err)
 		return err
 	}
+	log.Info("slash msg info", "data", data)
 	// get system message
 	msg := p.getSystemMessage(header.Coinbase, common.HexToAddress(systemcontracts.SlashContract), data, common.Big0)
 	// apply message
@@ -1777,13 +1779,22 @@ func (p *Parlia) applyTransaction(
 		}
 		actualTx := (*receivedTxs)[0]
 		if !bytes.Equal(p.signer.Hash(actualTx).Bytes(), expectedHash.Bytes()) {
-			return fmt.Errorf("expected tx hash %v, get %v, nonce %d, to %s, value %s, gas %d, gasPrice %s, data %s", expectedHash.String(), actualTx.Hash().String(),
+			// return fmt.Errorf("expected tx hash %v, get %v, nonce %d, to %s, value %s, gas %d, gasPrice %s, data %s", expectedHash.String(), actualTx.Hash().String(),
+			// 	expectedTx.Nonce(),
+			// 	expectedTx.To().String(),
+			// 	expectedTx.Value().String(),
+			// 	expectedTx.Gas(),
+			// 	expectedTx.GasPrice().String(),
+			// 	hex.EncodeToString(expectedTx.Data()),
+			// )
+			log.Error("expected tx hash error", "ctx", fmt.Sprintf("expected tx hash %v, get %v, nonce %d, to %s, value %s, gas %d, gasPrice %s, data %s", expectedHash.String(), actualTx.Hash().String(),
 				expectedTx.Nonce(),
 				expectedTx.To().String(),
 				expectedTx.Value().String(),
 				expectedTx.Gas(),
 				expectedTx.GasPrice().String(),
 				hex.EncodeToString(expectedTx.Data()),
+			),
 			)
 		}
 		expectedTx = actualTx
@@ -1992,6 +2003,7 @@ func applyMessage(
 	)
 	if err != nil {
 		log.Error("apply message failed", "msg", string(ret), "err", err)
+		log.Error("msg info", "to", msg.To(), "data", msg.Data(), "gas", msg.Gas(), "value", msg.Value(), "returnGas", returnGas)
 	}
 	return msg.Gas() - returnGas, err
 }
