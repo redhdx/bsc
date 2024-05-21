@@ -348,6 +348,8 @@ func (p *BundlePool) minimalBundleGasPrice() *big.Int {
 	return new(big.Int)
 }
 
+func (p *BundlePool) SetMaxGas(maxGas uint64) {}
+
 // =====================================================================================================================
 
 // numSlots calculates the number of slots needed for a single bundle.
